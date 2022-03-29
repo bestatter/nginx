@@ -1,0 +1,22 @@
+#!/bin/ash
+
+# Start generate SSL
+DOMAIN=${DOMAIN}
+COMMON_NAME=${2:-${DOMAIN}}
+SUBJECT="/C=RU/ST=Moscow/L=Moscow/O=Neti/CN=$COMMON_NAME"
+NUM_OF_DAYS=365
+
+openssl req -new -newkey rsa:2048 -sha256 -nodes -keyout /etc/nginx/ssl/device.key -subj "$SUBJECT" -out /etc/nginx/ssl/device.csr
+
+cat /etc/nginx/ssl/v3.ext | sed s/%%DOMAIN%%/$COMMON_NAME/g > /tmp/__v3.ext
+
+openssl x509 -req -in /etc/nginx/ssl/device.csr -CA /etc/nginx/ssl/rootCA.pem -CAkey /etc/nginx/ssl/rootCA.key -CAcreateserial -out /etc/nginx/ssl/device.crt -days $NUM_OF_DAYS -sha256 -extfile /tmp/__v3.ext
+
+mv /etc/nginx/ssl/device.csr /etc/nginx/ssl/$DOMAIN.csr
+cp /etc/nginx/ssl/device.crt /etc/nginx/ssl/$DOMAIN.crt
+rm -f /etc/nginx/ssl/device.crt;
+# End generate SSL
+
+envsubst '$DOMAIN $PROJECT_DIR $PHP' < /etc/nginx/bx/default.conf.template > /etc/nginx/conf.d/default.conf
+
+nginx -g "daemon off;"

@@ -1,0 +1,45 @@
+server {
+    listen 80 default_server;
+    server_name ${DOMAIN};
+    return 301 https://${DOMAIN}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name ${DOMAIN};
+
+    ssl_certificate /etc/nginx/ssl/${DOMAIN}.crt;
+    ssl_certificate_key /etc/nginx/ssl/device.key;
+
+	  root ${PROJECT_DIR};
+    index index.php;
+
+    client_max_body_size 100M;
+
+    location / {
+        try_files $uri $uri/ /bitrix/urlrewrite.php$is_args$args;
+    }
+
+    include /etc/nginx/bx/conf/bitrix.conf;
+
+    location ~ \.php$ {
+
+        if (!-f $request_filename) {
+            rewrite  ^(.*)/index.php$  $1/ redirect;
+        }
+        try_files $uri $uri/ /index.php last;
+
+        include fastcgi_params;
+
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass ${PHP}:9000;
+        fastcgi_index index.php;
+
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
