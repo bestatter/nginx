@@ -20,12 +20,6 @@ server {
         try_files $uri $uri/ /bitrix/routing_index.php$is_args$args;
     }
 
-    location /upload {
-        if (!-f $request_filename) {
-            rewrite ^/upload/(.*)$  https://$PROD_DOMAIN/upload/$1  redirect;
-        }
-    }
-
     include /etc/nginx/bx/conf/bitrix.conf;
 
     location ~ \.php$ {
