@@ -11,13 +11,19 @@ server {
     ssl_certificate /etc/nginx/ssl/${DOMAIN}.crt;
     ssl_certificate_key /etc/nginx/ssl/device.key;
 
-	  root ${PROJECT_DIR};
+	root ${PROJECT_DIR};
     index index.php;
 
     client_max_body_size 100M;
 
     location / {
-        try_files $uri $uri/ /bitrix/urlrewrite.php$is_args$args;
+        try_files $uri $uri/ /bitrix/routing_index.php$is_args$args;
+    }
+
+    location /upload {
+        if (!-f $request_filename) {
+            rewrite ^/upload/(.*)$  https://$PROD_DOMAIN/upload/$1  redirect;
+        }
     }
 
     include /etc/nginx/bx/conf/bitrix.conf;
