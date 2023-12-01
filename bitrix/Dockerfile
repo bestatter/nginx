@@ -1,9 +1,9 @@
 FROM nginx:1.21.3-alpine
 
 COPY start /usr/local/bin/start
-COPY config/bx /etc/nginx/bx
-COPY config/nginx.conf /etc/nginx/nginx.conf
-COPY config/mime.types /etc/nginx/mime.types
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d /etc/nginx/conf.d
+COPY nginx/sites-available /etc/nginx/sites-available
 COPY ssl /etc/nginx/ssl
 
 RUN apk update && apk add \
